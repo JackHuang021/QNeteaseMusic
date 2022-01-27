@@ -20,5 +20,3 @@ https://binaryify.github.io/NeteaseCloudMusicApi
 https://github.com/gcmwhite/CloudMusic-Bc-5  
 http://get.ftqq.com/7430.get  
 https://github.com/metowolf/NeteaseCloudMusicApi
-
-[跳转URL处理](https://blog.csdn.net/mingzznet/article/details/9724371)
