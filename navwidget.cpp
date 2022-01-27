@@ -1,4 +1,3 @@
-#pragma execution_character_set("utf-8")
 #include "navwidget.h"
 
 NavWidget::NavWidget(QWidget *parent) : QWidget(parent)
@@ -7,10 +6,10 @@ NavWidget::NavWidget(QWidget *parent) : QWidget(parent)
                   "QListWidget::item { color:#cccccc; padding:3px;} "
                   "QListWidget::item:selected { background-color:#333333; }");
     setFixedWidth(200);
-    setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Expanding);
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
     QVBoxLayout *vbox = new QVBoxLayout;
     listWidget = new QListWidget;
-    listWidget->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Expanding);
+    listWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
     QListWidgetItem *LWI;
     LWI = new QListWidgetItem("推荐");
     LWI->setFlags(Qt::NoItemFlags);

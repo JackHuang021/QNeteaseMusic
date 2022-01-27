@@ -79,8 +79,11 @@ private:
     QPushButton *pushButton_font, *pushButton_fontcolorleft, *pushButton_fontcolorright, *pushButton_path;
     QVideoWidget *videoWidget;
     QSettings settings;
-    void getToplistImg(QString coverImgUrl, QPushButton *pushButton);
     Qt::WindowState winState;
+    int userID;
+
+private:
+    void getToplistImg(QString coverImgUrl, QPushButton *pushButton);
 
 private slots:
     void showNormalMaximize();
@@ -104,6 +107,7 @@ private slots:
     void hideLyric();
     void showHideLyric(bool);
     void dialogSet();
+    void dialogLogin();
     void chooseFont();
     void chooseFontColor();
     void openDownloadPath();
@@ -120,6 +124,7 @@ private slots:
     void seekBack();
     void seekForward();
     void tableWidget_playlist_ContextMenu(const QPoint &position);
+    void loginSuccess(const int &userID, const QString &userImgUrl);
 };
 
 #endif // MAINWINDOW_H

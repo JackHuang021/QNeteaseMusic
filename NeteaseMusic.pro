@@ -6,19 +6,25 @@ TARGET = NeteaseMusic
 TEMPLATE = app
 
 SOURCES += \
+    httprequest.cpp \
+    logindialog.cpp \
         main.cpp \
         mainwindow.cpp \
     titlebar.cpp \
     controlbar.cpp \
     navwidget.cpp \
-    lyricwidget.cpp
+    lyricwidget.cpp \
+    userinfowidget.cpp
 
 HEADERS += \
+    httprequest.h \
+    logindialog.h \
         mainwindow.h \
     titlebar.h \
     controlbar.h \
     navwidget.h \
-    lyricwidget.h
+    lyricwidget.h \
+    userinfowidget.h
 
 RESOURCES += \
     res.qrc

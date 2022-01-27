@@ -1,39 +1,68 @@
 #include "mainwindow.h"
+#include "logindialog.h"
+#include <QCheckBox>
+#include "httprequest.h"
 
+
+static const QString mainUrl = "http://10.42.0.254:3000/";
+
+/**
+ * @brief MainWindow::MainWindow
+ * 窗口初始化
+ * @param parent
+ */
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       settings(QCoreApplication::organizationName(), QCoreApplication::applicationName())
 {
     prevRow = 1;
     navRow = 1;
-    setWindowIcon(QIcon(":/icon/icon.svg"));
+    setWindowIcon(QIcon(":/icon/icon.png"));
     setWindowFlags(Qt::FramelessWindowHint);
-    resize(1000,700);
-    move((QApplication::desktop()->width() - width())/2,(QApplication::desktop()->height() - height())/2);
+    resize(1000, 700);
+    move((QApplication::desktop()->width() - width()) / 2,
+         (QApplication::desktop()->height() - height()) / 2);
     setStyleSheet("color:white; background-color:#232326;");
-    connect(new QShortcut(QKeySequence(Qt::Key_Space),this), SIGNAL(activated()), this, SLOT(playPause()));
-    connect(new QShortcut(QKeySequence(Qt::Key_Escape),this), SIGNAL(activated()), this, SLOT(exitFullScreen()));
-    connect(new QShortcut(QKeySequence(Qt::Key_F11),this), SIGNAL(activated()), this, SLOT(enterExitFullScreen()));
-    connect(new QShortcut(QKeySequence(Qt::Key_Left),this), SIGNAL(activated()), this, SLOT(seekBack()));
-    connect(new QShortcut(QKeySequence(Qt::Key_Right),this), SIGNAL(activated()), this, SLOT(seekForward()));
+    connect(new QShortcut(QKeySequence(Qt::Key_Space), this),
+            SIGNAL(activated()), this, SLOT(playPause()));
+    connect(new QShortcut(QKeySequence(Qt::Key_Escape),this),
+            SIGNAL(activated()), this, SLOT(exitFullScreen()));
+    connect(new QShortcut(QKeySequence(Qt::Key_F11), this),
+            SIGNAL(activated()), this, SLOT(enterExitFullScreen()));
+    connect(new QShortcut(QKeySequence(Qt::Key_Left), this),
+            SIGNAL(activated()), this, SLOT(seekBack()));
+    connect(new QShortcut(QKeySequence(Qt::Key_Right), this),
+            SIGNAL(activated()), this, SLOT(seekForward()));
 
     QWidget *widget = new QWidget;
     setCentralWidget(widget);
     QVBoxLayout *vbox = new QVBoxLayout;
     vbox->setSpacing(0);
-    vbox->setContentsMargins(0,0,0,0);
+    vbox->setContentsMargins(0, 0, 0, 0);
 
     titleBar = new TitleBar;
-    connect(titleBar->action_search, SIGNAL(triggered(bool)), this, SLOT(preSearch()));
-    connect(titleBar->lineEdit_search, SIGNAL(returnPressed()), this, SLOT(preSearch()));
-    connect(titleBar->lineEdit_page, SIGNAL(returnPressed()), this, SLOT(search()));
-    connect(titleBar->pushButton_lastPage, SIGNAL(released()), this, SLOT(lastPage()));
-    connect(titleBar->pushButton_nextPage, SIGNAL(released()), this, SLOT(nextPage()));
-    connect(titleBar->pushButton_minimize, SIGNAL(released()), this, SLOT(showMinimized()));
-    connect(titleBar->pushButton_maximize, SIGNAL(released()), this, SLOT(showNormalMaximize()));
-    connect(titleBar->pushButton_close, SIGNAL(released()), qApp, SLOT(quit()));
-    connect(titleBar->action_set,SIGNAL(triggered()), this, SLOT(dialogSet()));
-    connect(titleBar, SIGNAL(moveMainWindow(QPoint)), this, SLOT(moveMe(QPoint)));
+    connect(titleBar->action_search, SIGNAL(triggered(bool)),
+            this, SLOT(preSearch()));
+    connect(titleBar->lineEdit_search, SIGNAL(returnPressed()),
+            this, SLOT(preSearch()));
+    connect(titleBar->lineEdit_page, SIGNAL(returnPressed()),
+            this, SLOT(search()));
+    connect(titleBar->pushButton_lastPage, SIGNAL(released()),
+            this, SLOT(lastPage()));
+    connect(titleBar->pushButton_nextPage, SIGNAL(released()),
+            this, SLOT(nextPage()));
+    connect(titleBar->loginPushBtn, &QPushButton::released,
+            this, &MainWindow::dialogLogin);
+    connect(titleBar->pushButton_minimize, SIGNAL(released()),
+            this, SLOT(showMinimized()));
+    connect(titleBar->pushButton_maximize, SIGNAL(released()),
+            this, SLOT(showNormalMaximize()));
+    connect(titleBar->pushButton_close, SIGNAL(released()),
+            qApp, SLOT(quit()));
+    connect(titleBar->action_set,SIGNAL(triggered()),
+            this, SLOT(dialogSet()));
+    connect(titleBar, SIGNAL(moveMainWindow(QPoint)),
+            this, SLOT(moveMe(QPoint)));
     vbox->addWidget(titleBar);
 
     label_titleBar_bottom = new QLabel;
@@ -65,18 +94,21 @@ MainWindow::MainWindow(QWidget *parent)
     tableWidget_playlist->setSelectionMode(QAbstractItemView::SingleSelection);
     tableWidget_playlist->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableWidget_playlist->setColumnCount(8);
-    tableWidget_playlist->setColumnHidden(4,true);
-    tableWidget_playlist->setColumnHidden(5,true);
-    tableWidget_playlist->setColumnHidden(6,true);
+    tableWidget_playlist->setColumnHidden(4, true);
+    tableWidget_playlist->setColumnHidden(5, true);
+    tableWidget_playlist->setColumnHidden(6, true);
+
     QStringList header;
     header << "歌名" << "歌手" << "专辑" << "时长" << "id" << "专辑封面" << "mvid" << "MV";
     tableWidget_playlist->setHorizontalHeaderLabels(header);
     tableWidget_playlist->setStyleSheet("QTableView::item:selected { color:white; background:rgb(22,22,22); }"
                                         "QTableCornerButton::section { background-color:#232326; }"
                                         "QHeaderView::section { color:white; background-color:#232326; }");
-    connect(tableWidget_playlist, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(playSong(int,int)));
+    connect(tableWidget_playlist, SIGNAL(cellDoubleClicked(int, int)),
+            this, SLOT(playSong(int, int)));
     tableWidget_playlist->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(tableWidget_playlist, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(tableWidget_playlist_ContextMenu(QPoint)));
+    connect(tableWidget_playlist, SIGNAL(customContextMenuRequested(QPoint)),
+            this, SLOT(tableWidget_playlist_ContextMenu(QPoint)));
     vboxPL->addWidget(tableWidget_playlist);
     playlistWidget->setLayout(vboxPL);
     stackedWidget->addWidget(playlistWidget);
@@ -97,15 +129,24 @@ MainWindow::MainWindow(QWidget *parent)
 
     controlBar = new ControlBar;
     controlBar->slider_volume->setValue(settings.value("Volume",100).toInt());
-    connect(controlBar->pushButton_last, SIGNAL(pressed()), this, SLOT(playLast()));
-    connect(controlBar->pushButton_play, SIGNAL(pressed()), this, SLOT(playPause()));
-    connect(controlBar->pushButton_next, SIGNAL(pressed()), this, SLOT(playNext()));
-    connect(controlBar->pushButton_mute, SIGNAL(pressed()), this, SLOT(mute()));
-    connect(controlBar->pushButton_lyric, SIGNAL(clicked(bool)), this, SLOT(showHideLyric(bool)));
-    connect(controlBar->pushButton_download, SIGNAL(pressed()), this, SLOT(dialogDownload()));
-    connect(controlBar->pushButton_fullscreen, SIGNAL(pressed()), this, SLOT(enterFullScreen()));
-    connect(controlBar->slider_progress, SIGNAL(sliderMoved(int)), this, SLOT(sliderProgressMoved(int)));
-    connect(controlBar->slider_volume, SIGNAL(sliderMoved(int)), this, SLOT(sliderVolumeMoved(int)));
+    connect(controlBar->pushButton_last, SIGNAL(pressed()),
+            this, SLOT(playLast()));
+    connect(controlBar->pushButton_play, SIGNAL(pressed()),
+            this, SLOT(playPause()));
+    connect(controlBar->pushButton_next, SIGNAL(pressed()),
+            this, SLOT(playNext()));
+    connect(controlBar->pushButton_mute, SIGNAL(pressed()),
+            this, SLOT(mute()));
+    connect(controlBar->pushButton_lyric, SIGNAL(clicked(bool)),
+            this, SLOT(showHideLyric(bool)));
+    connect(controlBar->pushButton_download, SIGNAL(pressed()),
+            this, SLOT(dialogDownload()));
+    connect(controlBar->pushButton_fullscreen, SIGNAL(pressed()),
+            this, SLOT(enterFullScreen()));
+    connect(controlBar->slider_progress, SIGNAL(sliderMoved(int)),
+            this, SLOT(sliderProgressMoved(int)));
+    connect(controlBar->slider_volume, SIGNAL(sliderMoved(int)),
+            this, SLOT(sliderVolumeMoved(int)));
     vbox->addWidget(controlBar);
     widget->setLayout(vbox);
 
@@ -178,31 +219,42 @@ MainWindow::~MainWindow()
 {
 }
 
+/**
+ * @brief MainWindow::moveMe
+ * @param point
+ * 主窗口拖动
+ */
 void MainWindow::moveMe(QPoint point)
 {
     move(point);
 }
 
+/**
+ * @brief MainWindow::createWidgetToplist
+ * 获取所有榜单，并创建榜单按键
+ */
 void MainWindow::createWidgetToplist()
 {
-    rankScrollArea = new QScrollArea;
     QWidget *toplistWidget = new QWidget;
-    rankScrollArea->setWidget(toplistWidget);
-    rankScrollArea->setWidgetResizable(true);   //关键语句
     QGridLayout *gridLayout = new QGridLayout(toplistWidget);
+
+    rankScrollArea = new QScrollArea;
+    rankScrollArea->setWidget(toplistWidget);
+    rankScrollArea->setWidgetResizable(true);
+
     gridLayout->setSpacing(40);
-    QString surl = "http://music.163.com/api/toplist";
-    QJsonDocument JD = QJsonDocument::fromJson(getReply(surl));
-    qDebug() << surl;
+    QString surl = mainUrl + "/toplist";
+    QJsonDocument JD = QJsonDocument::fromJson(HttpRequest::getRequest(surl));
     QJsonArray JA_list = JD.object().value("list").toArray();
-    //qDebug() << list;
-    for (int i=0; i< JA_list.size(); i++) {
-        QString coverImgUrl = JA_list[i].toObject().value("coverImgUrl").toString();
+    for (int i = 0; i< JA_list.size(); i++)
+    {
+        QString coverImgUrl = JA_list[i].toObject().
+                              value("coverImgUrl").toString();
         double id = JA_list[i].toObject().value("id").toDouble();
         QString name = JA_list[i].toObject().value("name").toString();
         QPushButton *pushButton = new QPushButton(this);
-        pushButton->setFixedSize(120,120);
-        pushButton->setIconSize(QSize(120,120));
+        pushButton->setFixedSize(120, 120);
+        pushButton->setIconSize(QSize(120, 120));
         pushButton->setFlat(true);
         pushButton->setCursor(Qt::PointingHandCursor);
         gridLayout->addWidget(pushButton, i/5, i%5);
@@ -218,10 +270,9 @@ QByteArray MainWindow::getReply(QString surl)
     QNetworkAccessManager *NAM = new QNetworkAccessManager;
     QNetworkRequest request;
     request.setUrl(QUrl(surl));
-    request.setRawHeader("Referer", "http://music.163.com/");
     QNetworkReply *reply = NAM->get(request);
     QEventLoop loop;
-    connect(reply,&QNetworkReply::finished,&loop,&QEventLoop::quit);
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
     loop.exec();
     reply->deleteLater();
     return reply->readAll();
@@ -237,15 +288,19 @@ QByteArray MainWindow::postReply(QString surl,QString spost)
     BA_post.append(spost);
     QNetworkReply *reply = NAM->post(request,BA_post);
     QEventLoop loop;
-    connect(reply,&QNetworkReply::finished,&loop,&QEventLoop::quit);
+    connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
     loop.exec();
     reply->deleteLater();
     return reply->readAll();
 }
 
+/**
+ * @brief MainWindow::showNormalMaximize
+ * 最大最小化处理
+ * TODO: 按键的变化需要封装到titlebar类里面
+ */
 void MainWindow::showNormalMaximize()
 {
-    //qDebug() << "isMaximized=" << isMaximized();    
     if (isMaximized()) {
         showNormal();
         titleBar->pushButton_maximize->setStyleSheet("QPushButton { border-image: url(:/icon/maximize.svg); }"
@@ -259,41 +314,77 @@ void MainWindow::showNormalMaximize()
     }
 }
 
+
+/**
+ * @brief MainWindow::createPlaylist
+ * 创建歌单列表
+ * @param id 歌单id
+ * @param name 歌单名字
+ */
 void MainWindow::createPlaylist(double id, QString name)
 {
-    QString surl = QString("http://music.163.com/api/playlist/detail?id=%1").arg(id, 0, 'f', 0);
+    QString surl = QString("http://music.eleuu.com/playlist/detail?id=%1").arg(id, 0, 'f', 0);
     qDebug() << surl;
     QJsonDocument JD = QJsonDocument::fromJson(getReply(surl));
-    //qDebug() << JD;
     int code = JD.object().value("code").toInt();
     qDebug() << code;
-    if (code == 200) {
+    if (code == 200)
+    {
         tableWidget_playlist->setRowCount(0);
         tableWidget_playlist->scrollToTop();
-        QJsonArray tracks = JD.object().value("result").toObject().value("tracks").toArray();
-        //qDebug() << tracks;
-        for (int i=0; i<tracks.size(); i++) {
+        QJsonArray tracks = JD.object().value("playlist").toObject().value("tracks").toArray();
+        qDebug() << tracks.size();
+
+        for (int i = 0; i < tracks.size(); i++)
+        {
             tableWidget_playlist->insertRow(i);
+            // song name
             tableWidget_playlist->setItem(i,0,new QTableWidgetItem(tracks[i].toObject().value("name").toString()));
-            QJsonArray artists = tracks[i].toObject().value("artists").toArray();
+            // artist name
+            QJsonArray artists = tracks[i].toObject().value("ar").toArray();
             QString sartists = "";
-            for(int a=0; a<artists.size(); a++){
+
+            for(int a = 0; a < artists.size(); a++)
+            {
                 sartists += artists[a].toObject().value("name").toString();
-                if(a<artists.size()-1) sartists += ",";
+                if (sartists.length() > 10)
+                {
+                    sartists += "...";
+                    break;
+                }
+                if(a < artists.size() - 1) sartists += ",";
             }
-            tableWidget_playlist->setItem(i,1,new QTableWidgetItem(sartists));
-            tableWidget_playlist->setItem(i,2,new QTableWidgetItem(tracks[i].toObject().value("album").toObject().value("name").toString()));
-            int ds = tracks[i].toObject().value("duration").toInt()/1000;
-            QTableWidgetItem *TWI = new QTableWidgetItem(QString("%1:%2").arg(ds/60,2,10,QLatin1Char(' ')).arg(ds%60,2,10,QLatin1Char('0')));
-            TWI->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+            tableWidget_playlist->setItem(i, 1, new QTableWidgetItem(sartists));
+            // album
+            tableWidget_playlist->setItem(i, 2, new QTableWidgetItem(tracks[i].
+                                          toObject().value("al").toObject().
+                                          value("name").toString()));
+
+            // time
+            int ds = tracks[i].toObject().value("dt").toInt()/1000;
+            QTableWidgetItem *TWI = new QTableWidgetItem(QString("%1:%2").
+                                    arg(ds / 60, 2, 10, QLatin1Char(' ')).
+                                    arg(ds % 60, 2, 10, QLatin1Char('0')));
+            TWI->setTextAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
             tableWidget_playlist->setItem(i, 3, TWI);
-            tableWidget_playlist->setItem(i, 4, new QTableWidgetItem(QString::number(tracks[i].toObject().value("id").toInt())));
-            tableWidget_playlist->setItem(i,5,new QTableWidgetItem(tracks[i].toObject().value("album").toObject().value("picUrl").toString()));
-            int mvid = tracks[i].toObject().value("mvid").toInt();
+
+            // song id
+            tableWidget_playlist->setItem(i, 4, new QTableWidgetItem(QString::
+                                          number(tracks[i].toObject().
+                                          value("id").toInt())));
+
+            // song album picture
+            tableWidget_playlist->setItem(i, 5, new QTableWidgetItem(tracks[i].
+                                          toObject().value("al").
+                                          toObject().value("picUrl").toString()));
+
+            // song mvid
+            int mvid = tracks[i].toObject().value("mv").toInt();
             tableWidget_playlist->setItem(i, 6, new QTableWidgetItem(QString::number(mvid)));
-            if(mvid != 0){
+            if(mvid != 0)
+            {
                 QPushButton *pushButton_MV = new QPushButton;
-                pushButton_MV->setFixedSize(24,24);
+                pushButton_MV->setFixedSize(24, 24);
                 pushButton_MV->setIcon(QIcon(":/icon/video.svg"));
                 pushButton_MV->setIconSize(QSize(24, 24));
                 pushButton_MV->setFocusPolicy(Qt::NoFocus);
@@ -304,12 +395,19 @@ void MainWindow::createPlaylist(double id, QString name)
             }
         }
         tableWidget_playlist->resizeColumnsToContents();
+        tableWidget_playlist->setColumnWidth(0, 150);
+        tableWidget_playlist->setColumnWidth(1, 150);
+        tableWidget_playlist->setColumnWidth(2, 150);
+
         navWidget->listWidget->setCurrentRow(2);
         label_playlistTitle->setText(name);
-    } else {
+    }
+    else
+    {
         QString message = JD.object().value("message").toString();
         label_message->setText(message);
-        label_message->move(x() + width()/2 - label_message->width()/2, y() + height()/2 - label_message->height()/2);
+        label_message->move(x() + width()/2 - label_message->width()/2,
+                            y() + height()/2 - label_message->height()/2);
         label_message->show();
         QTimer::singleShot(5000, this, [=]{
             label_message->hide();
@@ -317,6 +415,13 @@ void MainWindow::createPlaylist(double id, QString name)
     }
 }
 
+
+/**
+ * @brief MainWindow::playSong
+ * 播放歌曲
+ * @param row
+ * @param column
+ */
 void MainWindow::playSong(int row, int column)
 {
     Q_UNUSED(column);
@@ -334,7 +439,6 @@ void MainWindow::playSong(int row, int column)
     pixmap.loadFromData(getReply(tableWidget_playlist->item(row,5)->text()));
     navWidget->pushButton_albumPic->setIcon(QIcon(pixmap));
     pixmap.save(QDir::currentPath() + "/cover.jpg");
-    //qDebug() << QDir::currentPath() + "/cover.jpg";
 }
 
 void MainWindow::durationChange(qint64 d)
@@ -873,6 +977,15 @@ void MainWindow::dialogDownload()
     }
 }
 
+
+void MainWindow::dialogLogin()
+{
+    LoginDialog *loginDialog = new LoginDialog;
+    loginDialog->show();
+    connect(loginDialog, &LoginDialog::loginSuccess,
+            this, &MainWindow::loginSuccess);
+}
+
 void MainWindow::download(QString surl, QString filepath)
 {
     controlBar->pushButton_download->setEnabled(false);
@@ -993,6 +1106,14 @@ void MainWindow::tableWidget_playlist_ContextMenu(const QPoint &position)
         titleBar->lineEdit_search->setText(text);
         preSearch();
     }
+}
+
+void MainWindow::loginSuccess(const int &userID, const QString &userImgUrl)
+{
+    this->userID = userID;
+    QPixmap pixmap;
+    pixmap.loadFromData(HttpRequest::getRequest(userImgUrl));
+    titleBar->showUserImg(pixmap);
 }
 
 void MainWindow::getToplistImg(QString coverImgUrl, QPushButton *pushButton)

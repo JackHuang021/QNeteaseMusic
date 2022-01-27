@@ -1,5 +1,5 @@
-﻿#pragma execution_character_set("utf-8")
-#include "titlebar.h"
+﻿#include "titlebar.h"
+#include <QStyle>
 
 TitleBar::TitleBar(QWidget *parent) : QWidget(parent)
 {
@@ -15,7 +15,10 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent)
 
     QLabel *label_icon = new QLabel;
     label_icon->setFixedSize(36,36);
-    label_icon->setPixmap(QPixmap(":/icon/icont.svg").scaled(label_icon->size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+    label_icon->setPixmap(QPixmap(":/icon/icont.svg").
+                          scaled(label_icon->size(),
+                                 Qt::KeepAspectRatioByExpanding,
+                                 Qt::SmoothTransformation));
     hbox->addWidget(label_icon);
 
     QLabel *label_title = new QLabel;
@@ -66,6 +69,17 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent)
 
     hbox->addStretch();
 
+    loginPushBtn = new QPushButton;
+    loginPushBtn->setFixedSize(24, 24);
+    loginPushBtn->setStyleSheet("QPushButton { border-image: url(:/icon/unlogin.svg); }"
+                                "QPushButton:hover { border-image: url(:/icon/unlogin_hover.svg); }"
+                                "QPushButton:pressed { border-image: url(:/icon/unlogin.svg); }");
+    loginPushBtn->setIconSize(QSize(20, 20));
+    loginPushBtn->setFlat(true);
+    loginPushBtn->setFocusPolicy(Qt::NoFocus);
+    hbox->addWidget(loginPushBtn);
+    hbox->addSpacing(10);
+
     QPushButton *pushButton_menu = new QPushButton;
     pushButton_menu->setFixedSize(24,24);
     pushButton_menu->setStyleSheet("QPushButton { border-image: url(:/icon/menu.svg); }"
@@ -83,8 +97,8 @@ TitleBar::TitleBar(QWidget *parent) : QWidget(parent)
     submenu->addAction(action_about);
     submenu->addAction(action_quit);
     pushButton_menu->setMenu(submenu);
-    connect(action_about,SIGNAL(triggered()),this,SLOT(about()));
-    connect(action_quit,SIGNAL(triggered()),qApp,SLOT(quit()));
+    connect(action_about, SIGNAL(triggered()), this, SLOT(about()));
+    connect(action_quit, SIGNAL(triggered()), qApp, SLOT(quit()));
     hbox->addWidget(pushButton_menu);
     hbox->addSpacing(10);
 
@@ -151,6 +165,16 @@ void TitleBar::mouseReleaseEvent(QMouseEvent *event)
     Q_UNUSED(event);
     isMLBD = false;
     setCursor(Qt::ArrowCursor);
+}
+
+void TitleBar::showUserImg(const QPixmap &pixmap)
+{
+    loginPushBtn->setStyleSheet("QPushButton {border-radius:12px;}");
+    loginPushBtn->setIcon(QIcon(pixmap));
+    QMenu *submenu = new QMenu(this);
+    QAction *action_logout = new QAction(tr("退出登录"));
+    submenu->addAction(action_logout);
+    loginPushBtn->setMenu(submenu);
 }
 
 bool TitleBar::eventFilter(QObject *obj, QEvent *event)

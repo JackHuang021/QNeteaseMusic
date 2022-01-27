@@ -45,5 +45,12 @@
         <file>icon/next_hover.svg</file>
         <file>icon/last_hover.svg</file>
         <file>icon/disc.svg</file>
+        <file>icon/unlogin.svg</file>
+        <file>icon/unlogin_hover.svg</file>
+        <file>icon/phone.svg</file>
+        <file>icon/login_phone.svg</file>
+        <file>icon/password.svg</file>
+        <file>icon/warning.svg</file>
+        <file>icon/icon.png</file>
     </qresource>
 </RCC>

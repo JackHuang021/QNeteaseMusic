@@ -22,9 +22,17 @@ class TitleBar : public QWidget
 
 public:
     explicit TitleBar(QWidget *parent = nullptr);
-    QPushButton *pushButton_search, *pushButton_lastPage, *pushButton_nextPage, *pushButton_minimize, *pushButton_maximize, *pushButton_close;
-    QLineEdit *lineEdit_search, *lineEdit_page;
-    QAction *action_set, *action_search;
+    QPushButton *pushButton_search;
+    QPushButton *pushButton_lastPage;
+    QPushButton *pushButton_nextPage;
+    QPushButton *pushButton_minimize;
+    QPushButton *pushButton_maximize;
+    QPushButton *pushButton_close;
+    QLineEdit *lineEdit_search;
+    QLineEdit *lineEdit_page;
+    QAction *action_set;
+    QAction *action_search;
+    QPushButton *loginPushBtn;
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
@@ -38,6 +46,9 @@ private:
 
 signals:
     void moveMainWindow(QPoint);
+
+public:
+    void showUserImg(const QPixmap &pixmap);
 
 private slots:
     void about();
